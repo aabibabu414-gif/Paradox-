@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PARADOX CHAT</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#070b19',
+                        cardbg: '#0f172a',
+                        accentCyan: '#06b6d4',
+                        accentViolet: '#8b5cf6'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-darkbg text-slate-100 font-sans antialiased min-h-screen flex flex-col relative overflow-x-hidden">
+
+    <!-- Neural Network Canvas Animation Background -->
+    <canvas id="neuralCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-25"></canvas>
+
+    <!-- App Container -->
+    <div id="app" class="relative z-10 flex flex-col min-h-screen max-w-md mx-auto w-full shadow-2xl bg-darkbg/90 backdrop-blur-md border-x border-slate-800">
+
+        <!-- AUTH SCREEN -->
+        <div id="authScreen" class="flex flex-col justify-center items-center flex-1 p-6 text-center">
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-accentViolet to-accentCyan flex items-center justify-center shadow-lg shadow-accentViolet/30 mb-6 animate-pulse">
+                <i data-lucide="brain" class="w-10 h-10 text-white"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold tracking-wider bg-gradient-to-r from-accentCyan to-accentViolet bg-clip-text text-transparent mb-2">PARADOX CHAT</h1>
+            <p class="text-slate-400 text-sm mb-8">Secure, decentralized neural messaging for everyone.</p>
+
+            <div class="w-full space-y-4">
+                <button onclick="handleGoogleLogin()" class="w-full flex items-center justify-center gap-3 bg-white text-slate-900 font-semibold py-3 px-4 rounded-xl shadow-md hover:bg-slate-100 transition active:scale-95">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.95H1.19v3.15C3.17 21.36 7.23 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.25c-.25-.72-.38-1.49-.38-2.25s.13-1.53.38-2.25V6.6H1.19C.43 8.13 0 9.87 0 12s.43 3.87 1.19 5.4l4.09-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.17 2.64 1.19 6.6l4.09 3.15c.95-2.84 3.6-4.95 6.72-4.95z"/></svg>
+                    Continue with Google
+                </button>
+            </div>
+        </div>
+
+        <!-- USERNAME SETUP SCREEN (Hidden initially) -->
+        <div id="usernameScreen" class="hidden flex-col justify-center items-center flex-1 p-6 text-center">
+            <h2 class="text-2xl font-bold mb-2">Create Your Profile</h2>
+            <p class="text-slate-400 text-sm mb-6">Choose a unique username to let friends find you.</p>
+            <div class="w-full space-y-4 text-left">
+                <div>
+                    <label class="text-xs text-slate-400 mb-1 block">Display Name</label>
+                    <input type="text" id="displayNameInput" placeholder="e.g. Alex Quantum" class="w-full bg-cardbg border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accentCyan">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 mb-1 block">Unique Username</label>
+                    <input type="text" id="usernameInput" placeholder="e.g. alex_q" class="w-full bg-cardbg border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accentCyan">
+                </div>
+                <button onclick="saveProfile()" class="w-full bg-gradient-to-r from-accentCyan to-accentViolet text-white font-semibold py-3 rounded-xl shadow-lg shadow-cyan-500/20">Start Messaging</button>
+            </div>
+        </div>
+
+        <!-- MAIN DASHBOARD (Hidden initially) -->
+        <div id="mainDashboard" class="hidden flex-col flex-1 pb-20">
+            <!-- Top Header -->
+            <header class="p-4 border-b border-slate-800 flex justify-between items-center bg-darkbg/80 sticky top-0 z-20 backdrop-blur">
+                <h2 id="headerTitle" class="text-xl font-bold bg-gradient-to-r from-accentCyan to-accentViolet bg-clip-text text-transparent">Chats</h2>
+                <div class="flex items-center gap-3">
+                    <span id="userBadge" class="text-xs bg-slate-800 text-cyan-400 px-3 py-1 rounded-full border border-cyan-500/30">@username</span>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="flex-1 overflow-y-auto">
+                <!-- TAB 1: CHATS -->
+                <div id="tabChats" class="tab-content p-4 space-y-3">
+                    <div onclick="openChat('Naitik Puri', 'Hey! How is the Netlify deployment going?')" class="flex items-center gap-3 p-3 bg-cardbg border border-slate-800/80 rounded-2xl cursor-pointer hover:border-slate-700 transition">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-500 to-violet-600 flex items-center font-bold text-white text-lg justify-center">NP</div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-semibold text-white truncate">Naitik Puri</h4>
+                            <p class="text-xs text-slate-400 truncate">Hey! How is the Netlify deployment going?</p>
+                        </div>
+                        <span class="text-[10px] text-slate-500">12:35 PM</span>
+                    </div>
+                </div>
+
+                <!-- TAB 2: FIND FRIENDS -->
+                <div id="tabFind" class="tab-content hidden p-4 space-y-4">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-3.5 w-4 h-4 text-slate-400"></i>
+                        <input type="text" placeholder="Search username (e.g. aabibabu)" class="w-full bg-cardbg border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-accentCyan">
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between p-3 bg-cardbg border border-slate-800 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center font-bold">AB</div>
+                                <div>
+                                    <h5 class="font-semibold text-sm">Aabi Babu</h5>
+                                    <p class="text-xs text-slate-400">@aabibabu414</p>
+                                </div>
+                            </div>
+                            <button onclick="openChat('Aabi Babu', 'Connected via Paradox')" class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-cyan-500/20">Chat</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: INVITE FRIENDS -->
+                <div id="tabInvite" class="tab-content hidden p-4 space-y-4 text-center">
+                    <div class="p-6 bg-cardbg border border-slate-800 rounded-2xl space-y-4">
+                        <div class="w-12 h-12 bg-violet-500/20 text-violet-400 rounded-full flex items-center justify-center mx-auto">
+                            <i data-lucide="share-2" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-bold text-lg">Invite Your Friends</h3>
+                        <p class="text-xs text-slate-400">Share your neural link with friends to start encrypted real-time messaging instantly with zero SMS cost.</p>
+                        <button onclick="copyInviteLink()" class="w-full bg-accentCyan text-slate-950 font-bold py-3 rounded-xl shadow-lg shadow-cyan-500/20">Copy Invitation Link</button>
+                    </div>
+                </div>
+
+                <!-- TAB 4: PROFILE -->
+                <div id="tabProfile" class="tab-content hidden p-4 space-y-4">
+                    <div class="flex flex-col items-center p-6 bg-cardbg border border-slate-800 rounded-2xl">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-cyan-500 to-violet-600 flex items-center justify-center text-2xl font-bold mb-3">U</div>
+                        <h3 id="profileName" class="font-bold text-lg">User Name</h3>
+                        <p id="profileHandle" class="text-xs text-cyan-400 mb-4">@username</p>
+                        <button onclick="logout()" class="text-red-400 bg-red-500/10 border border-red-500/30 px-4 py-2 rounded-xl text-xs font-semibold">Sign Out</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAT CONVERSATION MODAL/VIEW (Overlay) -->
+            <div id="chatWindow" class="hidden absolute inset-0 bg-darkbg z-30 flex flex-col">
+                <div class="p-4 border-b border-slate-800 flex items-center gap-3 bg-darkbg/90 backdrop-blur">
+                    <button onclick="closeChat()" class="text-slate-400 hover:text-white"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+                    <div class="w-9 h-9 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-sm" id="chatAvatar">NP</div>
+                    <div>
+                        <h4 id="chattingWithName" class="font-bold text-sm">Naitik Puri</h4>
+                        <span class="text-[10px] text-green-400">Online</span>
+                    </div>
+                </div>
+                <div id="messageContainer" class="flex-1 p-4 overflow-y-auto space-y-3">
+                    <div class="flex justify-start">
+                        <div class="bg-cardbg border border-slate-800 px-4 py-2.5 rounded-2xl max-w-[75%] text-sm">Hey! How is the Netlify deployment going?</div>
+                    </div>
+                </div>
+                <div class="p-3 border-t border-slate-800 bg-darkbg flex items-center gap-2">
+                    <input type="text" id="messageInput" placeholder="Type a secure message..." class="flex-1 bg-cardbg border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-accentCyan">
+                    <button onclick="sendMessage()" class="bg-accentCyan text-slate-950 p-2.5 rounded-xl font-bold"><i data-lucide="send" class="w-4 h-4"></i></button>
+                </div>
+            </div>
+
+            <!-- Bottom Navigation Bar -->
+            <nav class="absolute bottom-0 left-0 right-0 h-16 bg-cardbg/90 backdrop-blur border-t border-slate-800 flex justify-around items-center px-2 z-20">
+                <button onclick="switchTab('chats')" class="nav-btn text-cyan-400 flex flex-col items-center gap-1" data-tab="chats">
+                    <i data-lucide="message-square" class="w-5 h-5"></i>
+                    <span class="text-[10px]">Chats</span>
+                </button>
+                <button onclick="switchTab('find')" class="nav-btn text-slate-400 flex flex-col items-center gap-1" data-tab="find">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                    <span class="text-[10px]">Find</span>
+                </button>
+                <button onclick="switchTab('invite')" class="nav-btn text-slate-400 flex flex-col items-center gap-1" data-tab="invite">
+                    <i data-lucide="user-plus" class="w-5 h-5"></i>
+                    <span class="text-[10px]">Invite</span>
+                </button>
+                <button onclick="switchTab('profile')" class="nav-btn text-slate-400 flex flex-col items-center gap-1" data-tab="profile">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                    <span class="text-[10px]">Profile</span>
+                </button>
+            </nav>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Neural Network Background Particle Animation
+        const canvas = document.getElementById('neuralCanvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const particles = Array.from({ length: 35 }, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.6,
+            vy: (Math.random() - 0.5) * 0.6
+        }));
+
+        function animateNeuralNet() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.15)';
+            ctx.lineWidth = 1;
+
+            particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                particles.slice(index + 1).forEach(p2 => {
+                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                });
+            });
+            requestAnimationFrame(animateNeuralNet);
+        }
+        animateNeuralNet();
+
+        // App Navigation & State Logic
+        function handleGoogleLogin() {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('usernameScreen').classList.remove('hidden');
+            document.getElementById('usernameScreen').classList.add('flex');
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('displayNameInput').value || 'User';
+            const uname = document.getElementById('usernameInput').value || 'user';
+            
+            document.getElementById('profileName').innerText = name;
+            document.getElementById('profileHandle').innerText = '@' + uname;
+            document.getElementById('userBadge').innerText = '@' + uname;
+
+            document.getElementById('usernameScreen').classList.add('hidden');
+            document.getElementById('mainDashboard').classList.remove('hidden');
+            document.getElementById('mainDashboard').classList.add('flex');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('text-cyan-400');
+                el.classList.add('text-slate-400');
+            });
+
+            document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.remove('hidden');
+            event.currentTarget.classList.remove('text-slate-400');
+            event.currentTarget.classList.add('text-cyan-400');
+            
+            const titles = { chats: 'Chats', find: 'Find Friends', invite: 'Invite Friends', profile: 'Profile & Settings' };
+            document.getElementById('headerTitle').innerText = titles[tabName];
+        }
+
+        function openChat(name, lastMsg) {
+            document.getElementById('chattingWithName').innerText = name;
+            document.getElementById('chatAvatar').innerText = name.split(' ').map(n => n[0]).join('');
+            document.getElementById('chatWindow').classList.remove('hidden');
+        }
+
+        function closeChat() {
+            document.getElementById('chatWindow').classList.add('hidden');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            if (!input.value.trim()) return;
+
+            const container = document.getElementById('messageContainer');
+            container.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-cyan-600 text-white px-4 py-2.5 rounded-2xl max-w-[75%] text-sm shadow-md">${input.value}</div>
+                </div>
+            `;
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function copyInviteLink() {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Invitation link copied to clipboard!');
+        }
+
+        function logout() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
